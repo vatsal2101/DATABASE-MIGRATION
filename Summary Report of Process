@@ -1,0 +1,107 @@
+# Database Migration Summary Report
+
+Project Title
+MySQL to PostgreSQL Data Migration and Integrity Verification
+
+Objective
+To successfully migrate data from a MySQL database (mydb) to a PostgreSQL database (my_pgdb) using
+Docker containers and pgloader, while ensuring data integrity and structural consistency throughout the
+migration process.
+
+Tools & Technologies Used
+- MySQL (via Docker)
+- PostgreSQL (via Docker)
+- pgloader for automated migration
+- Docker CLI for managing containers
+- SQL Shell (psql) for verification
+
+Migration Steps
+
+1. Setup MySQL Database (Docker)
+docker exec -it mysql mysql -uroot -pmysqlpass -e "CREATE DATABASE IF NOT EXISTS mydb;"
+
+2. Create and Populate MySQL Table
+
+docker exec -it mysql mysql -uroot -pmysqlpass -D mydb -e "
+
+CREATE TABLE test_users (
+ id INT AUTO_INCREMENT PRIMARY KEY,
+ name VARCHAR(50),
+ email VARCHAR(100)
+);
+
+INSERT INTO test_users (name, email) VALUES
+('Alice', 'alice@example.com'),
+('Bob', 'bob@example.com');
+
+3. Verify MySQL Table
+
+docker exec -it mysql mysql -uroot -pmysqlpass -e "SHOW TABLES FROM mydb;"
+
+Output:
++----------------+
+| Tables_in_mydb |
++----------------+
+| test_users |
++----------------+
+
+4. Setup PostgreSQL Database
+
+CREATE DATABASE my_pgdb;
+\c my_pgdb
+
+5. Run pgloader to Migrate Data
+
+docker run --rm dimitri/pgloader pgloader \
+mysql://root:mysqlpass@host.docker.internal:3306/mydb \
+postgresql://postgres:mysecretpassword@host.docker.internal:5432/my_pgdb
+
+6. pgloader Migration Log Summary
+
+Step | Errors | Rows | Bytes | Time
+---------------------------|--------|------|-------|---------
+Fetch Metadata | 0 | 2 | | 0.248s
+Create Schemas | 0 | 0 | | 0.004s
+Create SQL Types | 0 | 0 | | 0.020s
+Create Tables | 0 | 2 | | 0.080s
+Set Table OIDs | 0 | 1 | | 0.016s
+mydb.test_users | 0 | 2 | 0 KB | 0.108s
+COPY Threads Completion | 0 | 4 | | 0.112s
+Index Build Completion | 0 | 1 | | 0.112s
+Create Indexes | 0 | 1 | | 0.036s
+Database Migration Summary Report
+Reset Sequences | 0 | 1 | | 0.112s
+Primary Keys | 0 | 1 | | 0.020s
+Create Foreign Keys | 0 | 0 | | 0.000s
+Create Triggers | 0 | 0 | | 0.004s
+Install Comments | 0 | 0 | | 0.000s
+Total Import Time | ? | 2 | 0 KB | 0.396s
+
+7. Verify Data in PostgreSQL
+
+SELECT * FROM test_users;
+
+Output:
+ id | name | email
+----+-------+-------------------
+ 1 | Alice | alice@example.com
+ 2 | Bob | bob@example.com
+
+Data Integrity Validation
+
+- Row Count Match: ? MySQL: 2 rows ? PostgreSQL: 2 rows
+- Field Accuracy: ? All fields (id, name, email) match
+- Schema Consistency: ? Structure preserved
+- Auto-Increment Primary Key: ? Verified
+
+Conclusion
+
+The migration from MySQL to PostgreSQL using pgloader was successful. Data integrity, table structure, and
+constraints were verified and maintained post-migration.
+
+Deliverables
+
+1. Migration Scripts (Docker & pgloader commands)
+2. Migration Logs (pgloader summary)
+3. Post-Migration SQL Verification
+4. This Summary Report
