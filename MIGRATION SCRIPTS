@@ -1,0 +1,54 @@
+# MIGRATION SCRIPTS
+
+Environment Setup (Using Docker)
+
+1. Create MySQL Database:
+
+docker exec -it mysql mysql -uroot -pmysqlpass -e "CREATE DATABASE IF NOT EXISTS mydb;"
+
+2. Create Table in MySQL:
+
+docker exec -it mysql mysql -uroot -pmysqlpass -D mydb -e "
+
+3. CREATE TABLE test_users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(50),
+  email VARCHAR(100)
+);"
+
+4. Insert Records into MySQL Table:
+
+docker exec -it mysql mysql -uroot -pmysqlpass -D mydb -e "
+
+INSERT INTO test_users (name, email) VALUES
+('Alice', 'alice@example.com'),
+('Bob', 'bob@example.com');"
+
+5. View Tables in MySQL:
+
+docker exec -it mysql mysql -uroot -pmysqlpass -e "SHOW TABLES FROM mydb;"
+
+* PostgreSQL Setup (Docker)
+
+1. Create PostgreSQL Database:
+
+CREATE DATABASE my_pgdb;
+\c my_pgdb
+
+* Migration Using pgloader
+
+Run pgloader Command:
+
+docker run --rm dimitri/pgloader pgloader \
+mysql://root:mysqlpass@host.docker.internal:3306/mydb \
+postgresql://postgres:mysecretpassword@host.docker.internal:5432/my_pgdb
+
+ Verify Migration in PostgreSQL
+
+SELECT * FROM test_users;
+
+Expected Output:
+ id | name  |       email
+----+-------+---------------------
+ 1  | Alice | alice@example.com
+ 2  | Bob   | bob@example.com
